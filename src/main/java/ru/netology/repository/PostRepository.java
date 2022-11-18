@@ -6,23 +6,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Stub
 public class PostRepository {
-  private final List<Post> posts = new ArrayList<>();
-  private int counterId = 0;
+  private final CopyOnWriteArrayList<Post> posts = new CopyOnWriteArrayList<>();
+  private AtomicInteger counterId = new AtomicInteger(0);
   public List<Post> all() {
     return posts;
   }
 
   public Optional<Post> getById(long id) {
-    synchronized (posts) {
-      if (!posts.isEmpty()) {
-        for (int i = 1; i <= posts.size(); i++) {
-          var curPost = posts.get(i);
-          if (curPost.getId() == id) {
-            return Optional.of(curPost);
-          }
+    if (!posts.isEmpty()) {
+      for (int i = 1; i <= posts.size(); i++) {
+        var curPost = posts.get(i);
+        if (curPost.getId() == id) {
+          return Optional.of(curPost);
         }
       }
     }
@@ -30,36 +30,31 @@ public class PostRepository {
   }
 
   public Post save(Post post) {
-    synchronized (posts) {
-      int newPostId = 0;
-      if (post.getId() == newPostId) {
-        counterId++;
-        post.setId(counterId);
-        posts.add(post);
-      } else {
-        for (var curPost: posts) {
-          if (curPost.getId() == post.getId()) {
-            curPost.setContent(post.getContent());
-            return post;
-          }
+    int newPostId = 0;
+    if (post.getId() == newPostId) {
+      counterId.incrementAndGet();
+      post.setId(counterId.get());
+      posts.add(post);
+    } else {
+      for (var curPost: posts) {
+        if (curPost.getId() == post.getId()) {
+          curPost.setContent(post.getContent());
+          return post;
         }
-        post.setId(posts.size());
-        posts.add(post);
       }
+      post.setId(posts.size());
+      posts.add(post);
     }
     return post;
   }
 
   public void removeById(long id) {
-    synchronized (posts) {
-      if (!posts.isEmpty()) {
-        for (int i = 1; i <= posts.size(); i++) {
-          if (posts.get(i).getId() == id) {
-            posts.remove(i);
-            return;
-          }
+    if (!posts.isEmpty()) {
+      for (int i = 1; i <= posts.size(); i++) {
+        if (posts.get(i).getId() == id) {
+          posts.remove(i);
+          return;
         }
       }
-    }
-  }
+    }  }
 }

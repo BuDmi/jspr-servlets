@@ -15,6 +15,9 @@ public class MainServlet extends HttpServlet {
   private final String METHOD_POST = "POST";
   private final String METHOD_DELETE = "DELETE";
 
+  private final String POST_PATH = "/api/posts";
+  private final String POST_PATH_EXTRA = "/api/posts/\\d+";
+
   @Override
   public void init() {
     final var repository = new PostRepository();
@@ -29,23 +32,22 @@ public class MainServlet extends HttpServlet {
       final var path = req.getRequestURI();
       final var method = req.getMethod();
 
-      final var postPath = "/api/posts";
       // primitive routing
-      if (method.equals(METHOD_GET) && path.equals(postPath)) {
+      if (method.equals(METHOD_GET) && path.equals(POST_PATH)) {
         controller.all(resp);
         return;
       }
-      if (method.equals(METHOD_GET) && path.matches(postPath + "/\\d+")) {
+      if (method.equals(METHOD_GET) && path.matches(POST_PATH_EXTRA)) {
         // easy way
         final var id = getPostId(path);
         controller.getById(id, resp);
         return;
       }
-      if (method.equals(METHOD_POST) && path.equals(postPath)) {
+      if (method.equals(METHOD_POST) && path.equals(POST_PATH)) {
         controller.save(req.getReader(), resp);
         return;
       }
-      if (method.equals(METHOD_DELETE) && path.matches(postPath + "/\\d+")) {
+      if (method.equals(METHOD_DELETE) && path.matches(POST_PATH_EXTRA)) {
         // easy way
         final var id = getPostId(path);
         controller.removeById(id, resp);
